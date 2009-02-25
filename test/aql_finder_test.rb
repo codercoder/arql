@@ -21,4 +21,9 @@ class AqlFinderTest < Test::Unit::TestCase
   def test_find_by_unquoted_string_attribute_value
     assert_equal [@kuli1], User.find_by_aql("name = kuli1")
   end
+  
+  def test_find_by_multiple_conditions
+    assert_equal [@kuli1, @kuli2], User.find_by_aql("name = kuli1 or name = kuli2")
+    assert_equal [], User.find_by_aql("name = kuli1 and name = kuli2")
+  end
 end

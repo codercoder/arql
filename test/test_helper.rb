@@ -1,10 +1,8 @@
-$LOAD_PATH.unshift File.expand_path(File.dirname(__FILE__) + '/lib')
+$LOAD_PATH.unshift File.expand_path(File.dirname(__FILE__) + '/../lib')
 require 'aql'
-
 require 'test/unit'
 
 ActiveRecord::Base.establish_connection(:adapter => "sqlite3", :dbfile => ":memory:")
-
 
 class Test::Unit::TestCase
 
@@ -18,5 +16,4 @@ class Test::Unit::TestCase
       ActiveRecord::Schema.define(:version => 1, &block)
     end
   end
-
 end
