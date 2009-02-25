@@ -60,18 +60,16 @@ def parse_aql(str)
       # ignore space
     when m = scanner.scan(/=/i)
       tokens.push [:EQUAL, m]
-    when m = scanner.scan(/'[^']*'/)
+    when m = scanner.scan(/'(((\\')|[^'])*)'/) # single quoted
+      tokens.push   [:IDENTIFIER, unescape_quote(unquote(m))]
+    when m = scanner.scan(/"(((\\")|[^"])*)"/) # double quoted
       tokens.push   [:IDENTIFIER, unescape_quote(unquote(m))]
     when m = scanner.scan(/[\w-]+/)
       tokens.push   [:IDENTIFIER, unescape_quote(unquote(m))]
-    # when m = scanner.scan(/'(((\\')|[^'])*)'/) # single quoted
-    #   tokens.push   [:IDENTIFIER, unescape_quote(unquote(m))]
-    # when m = scanner.scan(/"(((\\")|[^"])*)"/)
-    #   tokens.push   [:IDENTIFIER, unescape_quote(unquote(m))]
     # when m = scanner.scan(/((\d+\.?\d*)|(\d*\.?\d+))/)
     #   tokens.push   [:IDENTIFIER, m]
-    # when m = scanner.scan(/(\\"|\\'|[\w-])+/) # no quote
-    #   tokens.push   [:IDENTIFIER, unescape_quote(m)]
+    when m = scanner.scan(/(\\"|\\'|[\w-])+/) # start with escaped quate
+      tokens.push   [:IDENTIFIER, unescape_quote(m)]
     else
       raise "unexpected characters #{scanner.peek(5)}"
     end
