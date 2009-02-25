@@ -3,10 +3,11 @@ class Aql::Parser
 options no_result_var
 
 prechigh
-  left EQUAL
+  left  AND
+  left  OR
 preclow
 
-token IDENTIFIER EQUAL
+token AND OR IDENTIFIER EQUAL
 
 rule
   # this is the starting rule
@@ -15,7 +16,9 @@ rule
   ;
 
   conditions
-  : condition
+  : conditions AND conditions                { Query::And.new(val[0], val[2]) } 
+  | conditions OR conditions                 { Query::Or.new(val[0], val[2]) } 
+  | condition
   ;
   
   operator
@@ -60,6 +63,10 @@ def parse_aql(str)
       # ignore space
     when m = scanner.scan(/=/i)
       tokens.push [:EQUAL, m]
+    when m = scanner.scan(/and\b/i)
+      tokens.push   [:AND, m]
+    when m = scanner.scan(/or\b/i)
+      tokens.push   [:OR, m]
     when m = scanner.scan(/'(((\\')|[^'])*)'/) # single quoted
       tokens.push   [:IDENTIFIER, unescape_quote(unquote(m))]
     when m = scanner.scan(/"(((\\")|[^"])*)"/) # double quoted
