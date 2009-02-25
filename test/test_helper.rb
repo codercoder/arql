@@ -1,4 +1,5 @@
-require File.join(File.dirname(__FILE__), '/../lib/aql')
+$LOAD_PATH.unshift File.expand_path(File.dirname(__FILE__) + '/lib')
+require 'aql'
 
 require 'test/unit'
 
