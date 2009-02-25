@@ -7,7 +7,7 @@ module Aql
         @right = right
       end
       def to_sql
-        "#{@left} #{@opt} '#{@right}'"
+        "#{@left} #{@opt} #{@right.inspect}"
       end
     end
 
