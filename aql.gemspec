@@ -6,7 +6,7 @@ Gem::Specification.new do |spec|
   #### Dependencies and requirements.
   spec.files = ["lib/aql/active_record_ext.rb", "lib/aql/aql_grammer.rb", "lib/aql/aql_grammer.tab.rb", "lib/aql/parser.rb", "lib/aql/query.rb", "lib/aql.rb", "CHANGES", "aql.gemspec", "lib", "LICENSE.TXT", "Rakefile", "README.rdoc", "TODO"]
 
-  spec.test_files = ["test/aql_find_by_association_test.rb", "test/aql_finder_test.rb", "test/parser_test.rb", "test/test_helper.rb"]
+  spec.test_files = ["test/active_record_ext_test.rb", "test/aql_find_by_association_test.rb", "test/aql_finder_test.rb", "test/parser_test.rb", "test/test_helper.rb"]
 
   #### Load-time details: library and application (you will need one or both).
 

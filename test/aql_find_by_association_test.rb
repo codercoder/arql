@@ -25,7 +25,7 @@ class AqlFindByAssociationTest < Test::Unit::TestCase
     @kuli1 = User.create!(:name => 'kuli1', :project => @aql)
     @kuli2 = User.create!(:name => 'kuli2')
 
-    assert_equal [@kuli1], User.find_by_aql("project = #{@aql.id}")
+    assert_equal [@kuli1], User.find(:all, :aql => "project = #{@aql.id}")
   end
 
 end
