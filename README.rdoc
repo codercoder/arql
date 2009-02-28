@@ -2,3 +2,11 @@
 
 Supporting AQL version: 0.x.x
 
+ActiveRecord Query Language is aimed at providing a database independent clean layer for querying models or values on ActiveRecord.
+
+== Why AQL?
+
+* You don't need to care about sql injection any more, just write everything as string.
+* You don't need to care about different sql for different database any more.
+* You don't need to care about how ActiveRecord maps database table any more, what you need to care is how your models associating together.
+
