@@ -8,7 +8,7 @@ module Aql
 
     module ClassMethods
       def find_by_aql(str)
-        find(:all, Parser.new.parse_aql(str).find_options)
+        find(:all, Parser.new.parse_aql(str).find_options(self))
       end
     end
   end

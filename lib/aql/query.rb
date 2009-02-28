@@ -1,4 +1,7 @@
 module Aql
+  class ColumnInvalid < StandardError
+  end
+
   class Query
     class Condition
       def initialize(left, opt, right)
@@ -7,8 +10,15 @@ module Aql
         @right = right
       end
       
-      def to_sql
-        "#{@left} #{@opt} #{@right.inspect}"
+      def to_sql(model)
+        column_name = if model.column_names.include?(@left)
+          @left
+        elsif reflection = model.reflections[@left.to_sym]
+          reflection.primary_key_name
+        else
+          raise ColumnInvalid, "Couldn't figure out what's means #{@left.inspect}."
+        end
+        "#{column_name} #{@opt} #{@right.inspect}"
       end
     end
     
@@ -18,8 +28,8 @@ module Aql
         @right = right
       end
       
-      def to_sql
-        @left.to_sql + " or " +  @right.to_sql
+      def to_sql(model)
+        @left.to_sql(model) + " or " +  @right.to_sql(model)
       end
     end
     
@@ -29,8 +39,8 @@ module Aql
         @right = right
       end
       
-      def to_sql
-        @left.to_sql + " and " + @right.to_sql
+      def to_sql(model)
+        @left.to_sql(model) + " and " + @right.to_sql(model)
       end
     end
     
@@ -38,8 +48,8 @@ module Aql
       @condition = options[:condition]
     end
 
-    def find_options
-      {:conditions => @condition.to_sql}
+    def find_options(model)
+      {:conditions => @condition.to_sql(model)}
     end
   end
 end

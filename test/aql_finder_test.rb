@@ -1,9 +1,9 @@
 require File.join(File.dirname(__FILE__), '/test_helper.rb')
 
-class User < ActiveRecord::Base
-end
-
 class AqlFinderTest < Test::Unit::TestCase
+  class User < ActiveRecord::Base
+  end
+
   def setup
     define_schema do
       create_table :users do |t|
@@ -25,5 +25,11 @@ class AqlFinderTest < Test::Unit::TestCase
   def test_find_by_multiple_conditions
     assert_equal [@kuli1, @kuli2], User.find_by_aql("name = kuli1 or name = kuli2")
     assert_equal [], User.find_by_aql("name = kuli1 and name = kuli2")
+  end
+
+  def test_should_raise_column_invalid_when_column_name_does_not_exist
+    assert_raise Aql::ColumnInvalid do
+      User.find_by_aql("non_exist_column_name = kuli1")
+    end
   end
 end
