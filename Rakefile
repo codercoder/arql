@@ -1,7 +1,7 @@
-# Rakefile for AQL        -*- ruby -*-
+# Rakefile for ARQL        -*- ruby -*-
 
 $LOAD_PATH.unshift File.expand_path(File.dirname(__FILE__) + '/lib')
-require 'aql'
+require 'arql'
 
 require 'rake/testtask'
 require 'rake/rdoctask'
@@ -25,10 +25,10 @@ end
 rd = Rake::RDocTask.new("rdoc") { |rdoc|
   rdoc.rdoc_dir = 'html'
   rdoc.template = 'html'
-  rdoc.title    = "AQL -- ActiveRecord Query Language"
+  rdoc.title    = "ARQL -- ActiveRecord Query Language"
   rdoc.options << '--line-numbers' << '--inline-source' <<
     '--main' << 'README.rdoc' <<
-    '--title' <<  'AQL -- ActiveRecord Query Language'
+    '--title' <<  'ARQL -- ActiveRecord Query Language'
   rdoc.rdoc_files.include('README.rdoc', 'LICENSE.txt', 'TODO', 'CHANGES')
   rdoc.rdoc_files.include('lib/**/*.rb')
 }
@@ -40,45 +40,47 @@ rd = Rake::RDocTask.new("rdoc") { |rdoc|
 if ! defined?(Gem)
   puts "Package Target requires RubyGEMs"
 else
-  gem_content = <<-GEM
-Gem::Specification.new do |spec|
-  spec.name = 'aql'
-  spec.version = "#{Aql::VERSION}"
-  spec.summary = "AQL is an ActiveRecord Query Language."
+  if Arql::VERSION.to_i >= 1
+    gem_content = <<-GEM
+  Gem::Specification.new do |spec|
+    spec.name = 'arql'
+    spec.version = "#{Arql::VERSION}"
+    spec.summary = "ARQL is an ActiveRecord Query Language."
 
-  #### Dependencies and requirements.
-  spec.files = #{(Dir.glob("lib/**/*.rb") + ["CHANGES", "aql.gemspec", "lib", "LICENSE.TXT", "Rakefile", "README.rdoc", "TODO"]).inspect}
+    #### Dependencies and requirements.
+    spec.files = #{(Dir.glob("lib/**/*.rb") + ["CHANGES", "arql.gemspec", "lib", "LICENSE.TXT", "Rakefile", "README.rdoc", "TODO"]).inspect}
 
-  spec.test_files = #{Dir.glob("test/**/*.rb").inspect}
+    spec.test_files = #{Dir.glob("test/**/*.rb").inspect}
 
-  #### Load-time details: library and application (you will need one or both).
+    #### Load-time details: library and application (you will need one or both).
 
-  spec.require_path = 'lib'                         # Use these for libraries.
+    spec.require_path = 'lib'                         # Use these for libraries.
 
-  #### Documentation and testing.
+    #### Documentation and testing.
 
-  spec.has_rdoc = true
-  spec.extra_rdoc_files = #{rd.rdoc_files.reject { |fn| fn =~ /\.rb$/ }.to_a.inspect}
-  spec.rdoc_options = #{rd.options.inspect}
+    spec.has_rdoc = true
+    spec.extra_rdoc_files = #{rd.rdoc_files.reject { |fn| fn =~ /\.rb$/ }.to_a.inspect}
+    spec.rdoc_options = #{rd.options.inspect}
 
-  #### Author and project details.
+    #### Author and project details.
 
-  spec.author = "Wang Pengchao & Li Xiao"
-  spec.homepage = "http://github.com/wpc/aql/tree/master"
-end
-GEM
-  File.open(File.dirname(__FILE__) + '/aql.gemspec', 'w') do |f|
-    f.write(gem_content)
+    spec.author = "Wang Pengchao & Li Xiao"
+    spec.homepage = "http://github.com/codercoder/arql/tree/master"
   end
+  GEM
+    File.open(File.dirname(__FILE__) + '/arql.gemspec', 'w') do |f|
+      f.write(gem_content)
+    end
 
-  #build gem package same steps with github
-  File.open(File.dirname(__FILE__) + '/aql.gemspec') do |f|
-    data = f.read
-    spec = nil
-    Thread.new { spec = eval("$SAFE = 3\n#{data}") }.join
-    package_task = Rake::GemPackageTask.new(spec) do |pkg|
-      #pkg.need_zip = true
-      #pkg.need_tar = true
+    #build gem package same steps with github
+    File.open(File.dirname(__FILE__) + '/arql.gemspec') do |f|
+      data = f.read
+      spec = nil
+      Thread.new { spec = eval("$SAFE = 3\n#{data}") }.join
+      package_task = Rake::GemPackageTask.new(spec) do |pkg|
+        #pkg.need_zip = true
+        #pkg.need_tar = true
+      end
     end
   end
 end

@@ -1,4 +1,4 @@
-module Aql
+module Arql
   class ColumnInvalid < StandardError
   end
 

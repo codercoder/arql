@@ -1,4 +1,4 @@
-class Aql::Parser
+class Arql::Parser
 
 options no_result_var
 
@@ -51,7 +51,7 @@ def unescape_quote(value)
   value.gsub(/\\(['|"])/, '\1')
 end
 
-def parse_aql(str)
+def parse_arql(str)
   @input = str
   tokens = []
   str = "" if str.nil?

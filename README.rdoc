@@ -1,10 +1,10 @@
-= AQL -- ActiveRecord Query Language
+= ARQL -- ActiveRecord Query Language
 
-Supporting AQL version: 0.x.x
+Supporting ARQL version: 0.x.x
 
 ActiveRecord Query Language is aimed at providing a database independent clean layer for querying models or values on ActiveRecord.
 
-== Why AQL?
+== Why ARQL?
 
 * You don't need to care about sql injection any more, just write everything as string.
 * You don't need to care about different sql for different database any more.
