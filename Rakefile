@@ -20,6 +20,11 @@ Rake::TestTask.new(:test) do |t|
   t.verbose = false
 end
 
+desc "generate arql parser by racc, need racc installed"
+task :racc do
+  %x[racc lib/arql/arql_grammer.rb]
+end
+
 # Create a task to build the RDOC documentation tree.
 
 rd = Rake::RDocTask.new("rdoc") { |rdoc|
