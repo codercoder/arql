@@ -1,3 +1,4 @@
+require 'ostruct'
 require 'arql/parser'
 module Arql
   class WhyNotArql < StandardError; end
@@ -20,6 +21,10 @@ module Arql
         end
         args << options
         find_without_arql(*args)
+      end
+
+      def arql_id(attribute=nil)
+        @arql ||= attribute
       end
     end
   end

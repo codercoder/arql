@@ -4,19 +4,19 @@ module Arql
 
   class Query
     class Column
-      def initialize(model, name)
-        @model = model
-        @name = name
-      end
-
-      def to_sql
-        column_name = if @model.column_names.include?(@name)
-          @name
-        elsif reflection = @model.reflections[@name.to_sym]
-          reflection.primary_key_name
+      def self.create(model, name)
+        column_name, joins = if model.column_names.include?(name)
+          [name]
+        elsif reflection = model.reflections[name.to_sym]
+          if reflection.klass.arql_id
+            ["#{reflection.klass.table_name}.#{reflection.klass.arql_id}", name.to_sym]
+          else
+            [reflection.primary_key_name]
+          end
         else
-          raise ColumnInvalid, "Couldn't figure out what's means #{@name.inspect}."
+          raise ColumnInvalid, "Couldn't figure out what's means #{name.inspect} for #{model.inspect}."
         end
+        OpenStruct.new(:to_sql => column_name, :joins => joins)
       end
     end
 
@@ -56,10 +56,13 @@ module Arql
     
     def initialize(options)
       @condition = options[:condition]
+      @joins = options[:joins]
     end
 
     def find_options
-      {:conditions => @condition.to_sql}
+      returning({:conditions => @condition.to_sql}) do |options|
+        options.merge! :joins => @joins unless @joins.blank?
+      end
     end
   end
 end

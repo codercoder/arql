@@ -12,7 +12,7 @@ token AND OR IDENTIFIER EQUAL
 rule
   # this is the starting rule
   target
-  : conditions                              { Query.new(:condition => val[0]) }
+  : conditions                               { Query.new(:condition => val[0], :joins => @joins.collect(&:joins).flatten.compact) }
   ;
 
   conditions
@@ -30,7 +30,7 @@ rule
   ;
 
   column
-  : IDENTIFIER                              { Query::Column.new(@model, val[0]) }
+  : IDENTIFIER                              { returning(Query::Column.create(@model, val[0])) {|column| @joins << column} }
   ;
 
   condition
@@ -58,6 +58,7 @@ end
 def parse_arql(model, str)
   @model = model
   @input = str
+  @joins = []
   tokens = []
   str = "" if str.nil?
   scanner = StringScanner.new(str + ' ')

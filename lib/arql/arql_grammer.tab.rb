@@ -28,6 +28,7 @@ end
 def parse_arql(model, str)
   @model = model
   @input = str
+  @joins = []
   tokens = []
   str = "" if str.nil?
   scanner = StringScanner.new(str + ' ')
@@ -156,7 +157,7 @@ Racc_debug_parser = false
 
 module_eval(<<'.,.,', 'arql_grammer.rb', 14)
   def _reduce_1(val, _values)
-     Query.new(:condition => val[0]) 
+     Query.new(:condition => val[0], :joins => @joins.collect(&:joins).flatten.compact) 
   end
 .,.,
 
@@ -188,7 +189,7 @@ module_eval(<<'.,.,', 'arql_grammer.rb', 28)
 
 module_eval(<<'.,.,', 'arql_grammer.rb', 32)
   def _reduce_7(val, _values)
-     Query::Column.new(@model, val[0]) 
+     returning(Query::Column.create(@model, val[0])) {|column| @joins << column} 
   end
 .,.,
 

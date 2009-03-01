@@ -12,7 +12,7 @@ require 'rake/gempackagetask'
 # The default task is run if rake is given no explicit arguments.
 
 desc "Default Task"
-task :default => :test
+task :default => [:racc, :test]
 
 Rake::TestTask.new(:test) do |t|
   t.test_files = FileList['test/*_test.rb']
