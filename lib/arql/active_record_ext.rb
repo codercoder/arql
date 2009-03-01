@@ -3,7 +3,6 @@ module Arql
   class WhyNotArql < StandardError; end
 
   module ActiveRecordExt
-
     def self.included(base)
       base.extend(ClassMethods)
       class << base
@@ -16,7 +15,7 @@ module Arql
         options = args.extract_options!
         if arql = options.delete(:arql)
           raise WhyNotArql, 'Why not use :arql option to replace :conditions option?' if options[:conditions]
-          arql_options = Parser.new.parse_arql(arql).find_options(self)
+          arql_options = Parser.new.parse_arql(self, arql).find_options
           options.merge!(arql_options)
         end
         args << options

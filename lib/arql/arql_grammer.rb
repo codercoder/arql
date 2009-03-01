@@ -29,8 +29,12 @@ rule
   : IDENTIFIER                              { val[0] }
   ;
 
+  column
+  : IDENTIFIER                              { Query::Column.new(@model, val[0]) }
+  ;
+
   condition
-  : identifier operator identifier          { Query::Condition.new(val[0], val[1], val[2]) }
+  : column operator identifier              { Query::Condition.new(val[0], val[1], val[2]) }
   ;
 end
 
@@ -51,7 +55,8 @@ def unescape_quote(value)
   value.gsub(/\\(['|"])/, '\1')
 end
 
-def parse_arql(str)
+def parse_arql(model, str)
+  @model = model
   @input = str
   tokens = []
   str = "" if str.nil?
