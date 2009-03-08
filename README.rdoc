@@ -8,5 +8,18 @@ ActiveRecord Query Language is aimed at providing a database independent clean l
 
 * You don't need to care about sql injection any more, just write everything as string.
 * You don't need to care about different sql for different database any more.
-* You don't need to care about how ActiveRecord maps database table any more, what you need to care is how your models associating together.
+* Keep your focus on models when you don't actually need to care about database schema.
+
+== License
+
+ARQL is available under a MIT License. Copyright (c) 2009 ThoughtWorks
+
+== Support
+
+Feel free to submit feature requests at http://arql.lighthouseapp.com.
+For other information, contact mailto:iam@li-xiao.com.
+
+== Authors
+
+"WPC" <alex.hal9000@gmail.com>, "Li Xiao" <iam@li-xiao.com>
 
