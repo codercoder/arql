@@ -35,7 +35,7 @@ module Arql
       def primitive_types_to_sql(value)
         case value
         when String
-          value.inspect
+          ActiveRecord::Base.connection.quote(value)
         when Numeric
           value
         end

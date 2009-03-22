@@ -25,6 +25,9 @@ task :racc do
   %x[racc lib/arql/arql_grammer.rb]
 end
 
+require 'cucumber/rake/task'
+Cucumber::Rake::Task.new
+
 # Create a task to build the RDOC documentation tree.
 
 rd = Rake::RDocTask.new("rdoc") { |rdoc|

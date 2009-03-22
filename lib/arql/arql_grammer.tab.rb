@@ -52,10 +52,8 @@ def parse_arql(model, str)
       tokens.push   [:IDENTIFIER, m.to_f]
     when m = scanner.scan(/\d+\.?/)                             # integers
       tokens.push   [:IDENTIFIER, m.to_i]
-    when m = scanner.scan(/[\w-]+/)
-      tokens.push   [:IDENTIFIER, unescape_quote(unquote(m))]
-    when m = scanner.scan(/(\\"|\\'|[\w-])+/) # start with escaped quate
-      tokens.push   [:IDENTIFIER, unescape_quote(m)]
+    when m = scanner.scan(/([\w-]|'|"|\\)+/)
+      tokens.push   [:IDENTIFIER, m]
     else
       raise "unexpected characters #{scanner.peek(5)}"
     end
