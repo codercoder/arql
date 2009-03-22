@@ -39,4 +39,15 @@ class ParserTest < Test::Unit::TestCase
     assert_equal({:conditions => 'name = "\\"kuli"'}, @parser.parse_arql(User, "name = \\\"kuli").find_options)
   end
 
+  def test_parse_number
+    assert_equal({:conditions => 'id = 2'}, @parser.parse_arql(User, 'id = 2').find_options)
+  end
+
+  def test_less_than_operator
+    assert_equal({:conditions => 'id < 2'}, @parser.parse_arql(User, 'id < 2').find_options)
+  end
+
+  def test_more_than_operator
+    assert_equal({:conditions => 'id > 1'}, @parser.parse_arql(User, 'id > 1').find_options)
+  end
 end

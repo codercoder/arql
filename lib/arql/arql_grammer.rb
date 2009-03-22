@@ -7,7 +7,7 @@ prechigh
   left  OR
 preclow
 
-token AND OR IDENTIFIER EQUAL
+token AND OR IDENTIFIER OPERATOR
 
 rule
   # this is the starting rule
@@ -20,10 +20,6 @@ rule
   | conditions OR conditions                 { Query::Or.new(val[0], val[2]) } 
   | condition
   ;
-  
-  operator
-  : EQUAL                                   { '=' }
-  ;
 
   identifier
   : IDENTIFIER                              { val[0] }
@@ -34,7 +30,7 @@ rule
   ;
 
   condition
-  : column operator identifier              { Query::Condition.new(val[0], val[1], val[2]) }
+  : column OPERATOR identifier              { Query::Condition.new(val[0], val[1], val[2]) }
   ;
 end
 
@@ -42,6 +38,7 @@ end
 require 'strscan'
 
 ---- inner ----
+OPERATORS = %w[= < >]
 
 def unquote(value)
   case value
@@ -67,20 +64,22 @@ def parse_arql(model, str)
     case
     when scanner.scan(/\s+/)
       # ignore space
-    when m = scanner.scan(/=/i)
-      tokens.push [:EQUAL, m]
+    when m = scanner.scan(/#{OPERATORS.join('|')}/i)
+      tokens.push [:OPERATOR, m]
     when m = scanner.scan(/and\b/i)
       tokens.push   [:AND, m]
     when m = scanner.scan(/or\b/i)
       tokens.push   [:OR, m]
-    when m = scanner.scan(/'(((\\')|[^'])*)'/) # single quoted
+    when m = scanner.scan(/'(((\\')|[^'])*)'/)                  # single quoted
       tokens.push   [:IDENTIFIER, unescape_quote(unquote(m))]
-    when m = scanner.scan(/"(((\\")|[^"])*)"/) # double quoted
+    when m = scanner.scan(/"(((\\")|[^"])*)"/)                  # double quoted
       tokens.push   [:IDENTIFIER, unescape_quote(unquote(m))]
+    when m = scanner.scan(/\d*\.\d+/)                           # floats
+      tokens.push   [:IDENTIFIER, m.to_f]
+    when m = scanner.scan(/\d+\.?/)                             # integers
+      tokens.push   [:IDENTIFIER, m.to_i]
     when m = scanner.scan(/[\w-]+/)
       tokens.push   [:IDENTIFIER, unescape_quote(unquote(m))]
-    # when m = scanner.scan(/((\d+\.?\d*)|(\d*\.?\d+))/)
-    #   tokens.push   [:IDENTIFIER, m]
     when m = scanner.scan(/(\\"|\\'|[\w-])+/) # start with escaped quate
       tokens.push   [:IDENTIFIER, unescape_quote(m)]
     else

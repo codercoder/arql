@@ -18,6 +18,14 @@ class ArqlFinderTest < Test::Unit::TestCase
     assert_equal [@kuli1], User.find(:all, :arql => "name = 'kuli1'")
   end
   
+  def test_find_by_number
+    assert_equal [@kuli1], User.find(:all, :arql => "id = #{@kuli1.id}")
+    assert_equal [@kuli1], User.find(:all, :arql => "id = #{@kuli1.id}.")
+    assert_equal [@kuli1], User.find(:all, :arql => "id = #{@kuli1.id}.0")
+    assert_equal [], User.find(:all, :arql => "id = .1")
+    assert_equal [], User.find(:all, :arql => "id = 0.1")
+  end
+  
   def test_find_by_unquoted_string_attribute_value
     assert_equal [@kuli1], User.find(:all, :arql => "name = kuli1")
   end

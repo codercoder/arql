@@ -28,7 +28,17 @@ module Arql
       end
       
       def to_sql
-        "#{@left.to_sql} #{@opt} #{@right.inspect}"
+        "#{@left.to_sql} #{@opt} #{primitive_types_to_sql(@right)}"
+      end
+
+      private
+      def primitive_types_to_sql(value)
+        case value
+        when String
+          value.inspect
+        when Numeric
+          value
+        end
       end
     end
     
