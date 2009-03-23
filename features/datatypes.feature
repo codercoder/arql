@@ -15,3 +15,15 @@ Feature: ARQL supported data types
     | kuli\\'6 | kuli\\'6 |
     | 'kuli 7' | kuli 7 |
     | "kuli' \\\"8" | kuli' \"8 |
+
+  Scenario Outline: Number type
+    Given users: kuli1, kuli2
+    When find user by arql: id = <user_id_number>
+    Then should find <found_user_name>
+  Examples:
+    | user_id_number | found_user_name |
+    | 1 | kuli1 |
+    | 1. | kuli1 |
+    | 1.0 | kuli1 |
+    | .1 | , |
+    | 0.1 | , |
