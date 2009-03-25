@@ -2,7 +2,7 @@ Feature: ARQL supported data types
 
   Scenario Outline: String type
     Given users: kuli1, kuli2, kuli"3, kuli'4, kuli\"5, kuli\'6, kuli 7, kuli' \"8
-    When find user by arql: name = <user_name_string>
+    When arql => name = <user_name_string>
     Then should find <found_user_name>
   Examples:
     | user_name_string | found_user_name |
@@ -18,7 +18,7 @@ Feature: ARQL supported data types
 
   Scenario Outline: Number type
     Given users: kuli1, kuli2
-    When find user by arql: id = <user_id_number>
+    When arql => id = <user_id_number>
     Then should find <found_user_name>
   Examples:
     | user_id_number | found_user_name |
