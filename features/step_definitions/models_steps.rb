@@ -1,18 +1,6 @@
 class User < ActiveRecord::Base
 end
 
-Given /users: (.*)/ do |user_names|
-  define_schema do
-    create_table :users do |t|
-      t.column :name, :string
-    end
-  end
-
-  user_names.split(',').collect(&:strip).each do |user_name|
-    User.create!(:name => user_name)
-  end
-end
-
 class Member < ActiveRecord::Base
   belongs_to :project
 end
@@ -25,6 +13,18 @@ end
 class Company < ActiveRecord::Base
   arql_id :name
   has_many :projects
+end
+
+Given /users: (.*)/ do |user_names|
+  define_schema do
+    create_table :users do |t|
+      t.column :name, :string
+    end
+  end
+
+  user_names.split(',').collect(&:strip).each do |user_name|
+    User.create!(:name => user_name)
+  end
 end
 
 Given /models: (.*)/ do |models|
