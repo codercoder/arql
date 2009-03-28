@@ -6,9 +6,9 @@ ActiveRecord Query Language is aimed at providing a database independent clean l
 
 == Why ARQL?
 
-* You don't need to care about sql injection any more, just write everything as string.
-* You don't need to care about different sql for different database any more.
-* Keep your focus on models when you don't actually need to care about database schema.
+* Write SQL as string, no more binding value, quoting and different database.
+* Keep you focus on models when you don't actually need to care about database schema.
+* En... Maybe just less typing.
 
 == License
 
