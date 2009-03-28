@@ -6,5 +6,5 @@ Feature: ARQL parser
     Then should output: <options>
   Examples:
     | arql | options |
-    | name = kuli1 | {:conditions => "name = 'kuli1'"} |
-    | id = 1 | {:conditions => 'id = 1'} |
+    | name = kuli1 | {:conditions => "'users'.'name' = 'kuli1'"} |
+    | id = 1 | {:conditions => "'users'.'id' = 1"} |

@@ -2,14 +2,24 @@ module Arql
   class ColumnInvalid < StandardError
   end
 
+  module SqlHeler
+    def quote(name)
+      ActiveRecord::Base.connection.quote(name.to_s)
+    end
+  end
+
   class Query
     class Column
+      extend SqlHeler
       def self.create(model, name)
         column_name, joins = if model.column_names.include?(name)
-          [name]
+          quoted_table_name = quote(model.table_name)
+          ["#{quoted_table_name}.#{quote(name)}"]
         elsif reflection = model.reflections[name.to_sym]
           if reflection.klass.arql_id
-            ["#{reflection.klass.table_name}.#{reflection.klass.arql_id}", name.to_sym]
+            quoted_table_name = quote(reflection.klass.table_name)
+            quoted_column_name = quote(reflection.klass.arql_id)
+            ["#{quoted_table_name}.#{quoted_column_name}", name.to_sym]
           else
             [reflection.primary_key_name]
           end
@@ -21,6 +31,7 @@ module Arql
     end
 
     class Condition
+      include SqlHeler
       def initialize(left, opt, right)
         @left = left
         @opt = opt
@@ -35,7 +46,7 @@ module Arql
       def primitive_types_to_sql(value)
         case value
         when String
-          ActiveRecord::Base.connection.quote(value)
+          quote(value)
         when Numeric
           value
         end

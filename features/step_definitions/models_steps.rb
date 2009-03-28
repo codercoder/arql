@@ -15,6 +15,23 @@ class Company < ActiveRecord::Base
   has_many :projects
 end
 
+class TableNameIsSelect < ActiveRecord::Base
+  arql_id :name
+  set_table_name :select
+end
+
+class Foo < ActiveRecord::Base
+  belongs_to :table_name_is_select
+  belongs_to :column_name_is_from
+end
+
+class ColumnNameIsFrom < ActiveRecord::Base
+  arql_id :from
+  def name
+    from
+  end
+end
+
 Given /users: (.*)/ do |user_names|
   define_schema do
     create_table :users do |t|
@@ -46,6 +63,24 @@ Given /models: (.*)/ do |models|
         t.column :name, :string
       end
     end
+    if models =~ /table_name_is_select/i
+      create_table :select do |t|
+        t.column :project_id, :integer
+        t.column :name, :string
+      end
+    end
+    if models =~ /foo/i
+      create_table :foos do |t|
+        t.column :table_name_is_select_id, :integer
+        t.column :column_name_is_from_id, :integer
+        t.column :name, :string
+      end
+    end
+    if models =~ /column_name_is_from/i
+      create_table :column_name_is_froms do |t|
+        t.column :from, :string
+      end
+    end
   end
 end
 
@@ -64,5 +99,23 @@ end
 Given /companies: (.*)/ do |names|
   names.split(',').collect(&:strip).each do |name|
     Company.create!(:name => name)
+  end
+end
+
+Given /foos: (.*)/ do |names|
+  names.split(',').collect(&:strip).each do |name|
+    Foo.create!(:name => name)
+  end
+end
+
+Given /table_name_is_selects: (.*)/ do |names|
+  names.split(',').collect(&:strip).each do |name|
+    TableNameIsSelect.create!(:name => name)
+  end
+end
+
+Given /column_name_is_froms: (.*)/ do |names|
+  names.split(',').collect(&:strip).each do |name|
+    ColumnNameIsFrom.create!(:from => name)
   end
 end
