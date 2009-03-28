@@ -14,7 +14,8 @@ module Arql
       def self.create(model, name)
         column_name, joins = if model.column_names.include?(name)
           quoted_table_name = quote(model.table_name)
-          ["#{quoted_table_name}.#{quote(name)}"]
+          quoted_column_name = quote(name)
+          ["#{quoted_table_name}.#{quoted_column_name}"]
         elsif reflection = model.reflections[name.to_sym]
           if reflection.klass.arql_id
             quoted_table_name = quote(reflection.klass.table_name)
