@@ -12,13 +12,7 @@ require 'rake/gempackagetask'
 # The default task is run if rake is given no explicit arguments.
 
 desc "Default Task"
-task :default => [:racc, :test, :features]
-
-Rake::TestTask.new(:test) do |t|
-  t.test_files = FileList['test/*_test.rb']
-  t.warning = true
-  t.verbose = false
-end
+task :default => [:racc, :features]
 
 desc "generate arql parser by racc, need racc installed"
 task :racc do

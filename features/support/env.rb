@@ -14,3 +14,7 @@ def define_schema(&block)
     ActiveRecord::Schema.define(:version => 1, &block)
   end
 end
+
+Before do
+  @options = {}
+end
