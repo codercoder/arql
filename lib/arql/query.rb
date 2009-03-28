@@ -3,31 +3,67 @@ module Arql
   end
 
   module SqlHeler
-    def quote(name)
-      ActiveRecord::Base.connection.quote(name.to_s)
+    def quote(name, column=nil)
+      ActiveRecord::Base.connection.quote(name.to_s, column)
+    end
+
+    def quote_table_name(name)
+      ActiveRecord::Base.connection.quote_table_name(name.to_s)
+    end
+
+    def quote_column_name(name)
+      ActiveRecord::Base.connection.quote_column_name(name.to_s)
+    end
+
+    def quote_name(table_name, column_name)
+      "#{quote_table_name(table_name)}.#{quote_column_name(column_name)}"
     end
   end
 
   class Query
     class Column
-      extend SqlHeler
-      def self.create(model, name)
-        column_name, joins = if model.column_names.include?(name)
-          quoted_table_name = quote(model.table_name)
-          quoted_column_name = quote(name)
-          ["#{quoted_table_name}.#{quoted_column_name}"]
-        elsif reflection = model.reflections[name.to_sym]
-          if reflection.klass.arql_id
-            quoted_table_name = quote(reflection.klass.table_name)
-            quoted_column_name = quote(reflection.klass.arql_id)
-            ["#{quoted_table_name}.#{quoted_column_name}", name.to_sym]
-          else
-            [reflection.primary_key_name]
-          end
-        else
-          raise ColumnInvalid, "Couldn't figure out what's means #{name.inspect} for #{model.inspect}."
+      class ColumnFactory
+        include SqlHeler
+        def initialize(model, name)
+          @model = model
+          @name = name
         end
-        OpenStruct.new(:to_sql => column_name, :joins => joins)
+
+        def create_column
+          column_name, joins = if @model.column_names.include?(@name)
+            [quote_name(@model.table_name, @name)]
+          elsif reflection = @model.reflections[@name.to_sym]
+            if reflection.klass.arql_id
+              column_name = reflection.klass.arql_id
+              [quote_name(reflection.klass.table_name, column_name), reflection.name.to_sym]
+            else
+              [reflection.primary_key_name]
+            end
+          elsif reflection = reflection_of_specified_comparision_name_in_arql
+            #specified comparision name in arql: project.name = 'arql'
+            arql_id = @name.split('.').last
+            [quote_name(reflection.klass.table_name, arql_id), reflection.name.to_sym]
+          else
+            raise column_invalid
+          end
+          OpenStruct.new(:to_sql => (column_name), :joins => joins)
+        end
+
+        private
+        def reflection_of_specified_comparision_name_in_arql
+          if @name =~ /.+\..+/
+            reflection_name = @name.split('.').first
+            @model.reflections[reflection_name.to_sym]
+          end
+        end
+
+        def column_invalid
+          ColumnInvalid.new "Couldn't figure out what's means #{@name.inspect} for #{@model.inspect}."
+        end
+      end
+
+      def self.create(model, name)
+        ColumnFactory.new(model, name).create_column
       end
     end
 
