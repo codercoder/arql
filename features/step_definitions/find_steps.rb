@@ -1,6 +1,4 @@
-module FindSteps
-  class User < ActiveRecord::Base
-  end
+class User < ActiveRecord::Base
 end
 
 Before do
@@ -15,12 +13,12 @@ Given /users: (.*)/ do |user_names|
   end
 
   user_names.split(',').collect(&:strip).each do |user_name|
-    FindSteps::User.create!(:name => user_name)
+    User.create!(:name => user_name)
   end
 end
 
 When /parse with user model: (.*)/ do |arql|
-  @options = Arql::Parser.new.parse_arql(FindSteps::User, arql).find_options
+  @options = Arql::Parser.new.parse_arql(User, arql).find_options
 end
 
 When /^([a-z]+) => (.*)/ do |key, value|
@@ -28,18 +26,18 @@ When /^([a-z]+) => (.*)/ do |key, value|
 end
 
 Then /should find (.*)/ do |user_names|
-  @found_users = FindSteps::User.find(:all, @options)
+  @found_users = User.find(:all, @options)
   @found_users.collect(&:name).should == user_names.split(',').collect(&:strip)
 end
 
 Then /find first should be (.*)/ do |user_name|
-  @found_user = FindSteps::User.find(:first, @options)
+  @found_user = User.find(:first, @options)
   @found_user.name.should == user_name.strip
 end
 
 Then /should raise (.*)/ do |error|
   begin
-    FindSteps::User.find(:all, @options)
+    User.find(:all, @options)
   rescue => e
     @raised_error = e
   end
@@ -48,6 +46,5 @@ end
 
 Then /should output: (.*)/ do |options|
   expected_options = eval(options)
-  p expected_options
   @options.should == expected_options
 end
