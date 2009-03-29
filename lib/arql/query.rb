@@ -84,8 +84,78 @@ module Arql
       end
     end
 
+    class Operator
+      def initialize(opt)
+        @opt = opt
+      end
+
+      def expression(left, right)
+        Expression.new(left, self, right)
+      end
+
+      def to_sql(left, right)
+        raise OperatorInvalid, "Unknown what's means: #{self} nil" if right.nil?
+        "#{@opt} #{left.quote_value(right)}"
+      end
+
+      def to_s
+        @opt
+      end
+    end
+
+    class Equal < Operator
+      include Singleton
+
+      def initialize
+        super('=')
+      end
+
+      def expression(left, right)
+        if right === false
+          Or.new(super, Expression.new(left, self, nil))
+        else
+          super
+        end
+      end
+
+      def to_sql(left, right)
+        right.nil? ? 'IS NULL' : super
+      end
+    end
+
+    class Unequal < Operator
+      include Singleton
+
+      def initialize
+        super('!=')
+      end
+
+      def expression(left, right)
+        if right.nil?
+          super
+        else
+          Or.new(super, Expression.new(left, Equal.instance, nil))
+        end
+      end
+
+      def to_sql(left, right)
+        right.nil? ? 'IS NOT NULL' : super
+      end
+    end
+
     class Condition
-      include SqlHeler
+      def initialize(left, opt, right)
+        @left = left
+        @opt = opt
+        @right = right
+      end
+
+      def to_sql
+        @opt.expression(@left, @right).to_sql
+      end
+    end
+
+    class Expression
       def initialize(left, opt, right)
         @left = left
         @opt = opt
@@ -97,13 +167,7 @@ module Arql
       end
 
       def to_sql
-        if @right.nil?
-          opt = {'=' => 'IS', '!=' => 'IS NOT'}[@opt]
-          raise OperatorInvalid, "Unknown what's means: #{self}" if opt.nil?
-          "#{@left.to_sql} #{opt} NULL"
-        else
-          "#{@left.to_sql} #{@opt} #{@left.quote_value(@right)}"
-        end
+        "#{@left.to_sql} #{@opt.to_sql(@left, @right)}"
       end
     end
 
@@ -117,7 +181,7 @@ module Arql
         @left.to_sql + " or " +  @right.to_sql
       end
     end
-    
+
     class And
       def initialize(left, right)
         @left = left
@@ -128,7 +192,7 @@ module Arql
         @left.to_sql + " and " + @right.to_sql
       end
     end
-    
+
     def initialize(options)
       @condition = options[:condition]
       @joins = options[:joins]

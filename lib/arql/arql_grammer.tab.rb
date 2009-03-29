@@ -11,8 +11,7 @@ require 'strscan'
 module Arql
   class Parser < Racc::Parser
 
-module_eval(<<'...end arql_grammer.rb/module_eval...', 'arql_grammer.rb', 41)
-OPERATORS = %w[!= = < >]
+module_eval(<<'...end arql_grammer.rb/module_eval...', 'arql_grammer.rb', 54)
 
 def unquote(value)
   case value
@@ -38,8 +37,12 @@ def parse_arql(model, str)
     case
     when scanner.scan(/\s+/)
       # ignore space
-    when m = scanner.scan(/#{OPERATORS.join('|')}/i)
-      tokens.push [:OPERATOR, m]
+    when m = scanner.scan(/\!\=/i)
+      tokens.push [:UNEQUAL, m]
+    when m = scanner.scan(/\=/i)
+      tokens.push [:EQUAL, m]
+    when m = scanner.scan(/>|</i)
+      tokens.push [:LESS_OR_MORE_THAN, m]
     when m = scanner.scan(/and\b/i)
       tokens.push   [:AND, m]
     when m = scanner.scan(/or\b/i)
@@ -49,7 +52,7 @@ def parse_arql(model, str)
     when m = scanner.scan(/false\b/i)
       tokens.push   [:IDENTIFIER, false]
     when m = scanner.scan(/nil\b/i)
-      tokens.push   [:IDENTIFIER, nil]
+      tokens.push   [:NIL, nil]
     when m = scanner.scan(/'(((\\')|[^'])*)'/)                  # single quoted
       tokens.push   [:IDENTIFIER, unescape_quote(unquote(m))]
     when m = scanner.scan(/"(((\\")|[^"])*)"/)                  # double quoted
@@ -71,54 +74,64 @@ end
 ##### State transition tables begin ###
 
 racc_action_table = [
-     8,     9,    10,     7,     2,     6,    12,     2,     2,     8 ]
+     9,    11,    12,    17,    18,     6,     7,     4,    13,     4,
+     4,    19,     6 ]
 
 racc_action_check = [
-     4,     4,     6,     3,     0,     1,     7,     8,     9,    14 ]
+     3,     3,     3,    10,    10,     1,     1,     6,     5,     7,
+     0,    13,    15 ]
 
 racc_action_pointer = [
-     0,     0,   nil,     3,    -2,   nil,    -2,     6,     3,     4,
-   nil,   nil,   nil,   nil,     7 ]
+     3,     3,   nil,    -4,   nil,     8,     0,     2,   nil,   nil,
+    -4,   nil,   nil,    11,   nil,    10,   nil,   nil,   nil,   nil ]
 
 racc_action_default = [
-    -8,    -8,    -6,    -8,    -1,    -4,    -8,    -8,    -8,    -8,
-    -5,    -7,    15,    -2,    -3 ]
+   -13,    -1,    -4,   -13,    -7,   -13,   -13,   -13,   -10,    -8,
+   -13,    -9,   -11,   -13,    -2,    -3,   -12,    -5,    -6,    20 ]
 
 racc_goto_table = [
-     4,     3,    11,   nil,   nil,   nil,   nil,   nil,    13,    14 ]
+     1,    16,     5,     8,    10,   nil,    14,    15 ]
 
 racc_goto_check = [
-     2,     1,     4,   nil,   nil,   nil,   nil,   nil,     2,     2 ]
+     2,     4,     1,     6,     7,   nil,     2,     2 ]
 
 racc_goto_pointer = [
-   nil,     1,     0,   nil,    -4,   nil ]
+   nil,     2,     0,   nil,    -9,   nil,     0,     1 ]
 
 racc_goto_default = [
-   nil,   nil,   nil,     5,   nil,     1 ]
+   nil,   nil,   nil,     2,   nil,     3,   nil,   nil ]
 
 racc_reduce_table = [
   0, 0, :racc_error,
-  1, 7, :_reduce_1,
-  3, 8, :_reduce_2,
-  3, 8, :_reduce_3,
-  1, 8, :_reduce_none,
-  1, 10, :_reduce_5,
-  1, 11, :_reduce_6,
-  3, 9, :_reduce_7 ]
+  1, 10, :_reduce_1,
+  3, 11, :_reduce_2,
+  3, 11, :_reduce_3,
+  1, 11, :_reduce_none,
+  1, 13, :_reduce_5,
+  1, 13, :_reduce_6,
+  1, 14, :_reduce_7,
+  1, 15, :_reduce_8,
+  1, 15, :_reduce_9,
+  1, 16, :_reduce_10,
+  1, 16, :_reduce_11,
+  3, 12, :_reduce_12 ]
 
-racc_reduce_n = 8
+racc_reduce_n = 13
 
-racc_shift_n = 15
+racc_shift_n = 20
 
 racc_token_table = {
   false => 0,
   :error => 1,
   :AND => 2,
   :OR => 3,
-  :IDENTIFIER => 4,
-  :OPERATOR => 5 }
+  :EQUAL => 4,
+  :UNEQUAL => 5,
+  :LESS_OR_MORE_THAN => 6,
+  :IDENTIFIER => 7,
+  :NIL => 8 }
 
-racc_nt_base = 6
+racc_nt_base = 9
 
 racc_use_result_var = false
 
@@ -143,14 +156,19 @@ Racc_token_to_s_table = [
   "error",
   "AND",
   "OR",
+  "EQUAL",
+  "UNEQUAL",
+  "LESS_OR_MORE_THAN",
   "IDENTIFIER",
-  "OPERATOR",
+  "NIL",
   "$start",
   "target",
   "conditions",
   "condition",
   "identifier",
-  "column" ]
+  "column",
+  "equal_or_unequal",
+  "operator" ]
 
 Racc_debug_parser = false
 
@@ -158,19 +176,19 @@ Racc_debug_parser = false
 
 # reduce 0 omitted
 
-module_eval(<<'.,.,', 'arql_grammer.rb', 14)
+module_eval(<<'.,.,', 'arql_grammer.rb', 17)
   def _reduce_1(val, _values)
      Query.new(:condition => val[0], :joins => @joins.collect(&:join).flatten.compact) 
   end
 .,.,
 
-module_eval(<<'.,.,', 'arql_grammer.rb', 18)
+module_eval(<<'.,.,', 'arql_grammer.rb', 21)
   def _reduce_2(val, _values)
      Query::And.new(val[0], val[2]) 
   end
 .,.,
 
-module_eval(<<'.,.,', 'arql_grammer.rb', 19)
+module_eval(<<'.,.,', 'arql_grammer.rb', 22)
   def _reduce_3(val, _values)
      Query::Or.new(val[0], val[2]) 
   end
@@ -178,7 +196,7 @@ module_eval(<<'.,.,', 'arql_grammer.rb', 19)
 
 # reduce 4 omitted
 
-module_eval(<<'.,.,', 'arql_grammer.rb', 24)
+module_eval(<<'.,.,', 'arql_grammer.rb', 27)
   def _reduce_5(val, _values)
      val[0] 
   end
@@ -186,12 +204,42 @@ module_eval(<<'.,.,', 'arql_grammer.rb', 24)
 
 module_eval(<<'.,.,', 'arql_grammer.rb', 28)
   def _reduce_6(val, _values)
-     returning(Query::Column.create(@model, val[0])) {|column| @joins << column} 
+     val[0] 
   end
 .,.,
 
 module_eval(<<'.,.,', 'arql_grammer.rb', 32)
   def _reduce_7(val, _values)
+     returning(Query::Column.create(@model, val[0])) {|column| @joins << column} 
+  end
+.,.,
+
+module_eval(<<'.,.,', 'arql_grammer.rb', 36)
+  def _reduce_8(val, _values)
+     Query::Equal.instance 
+  end
+.,.,
+
+module_eval(<<'.,.,', 'arql_grammer.rb', 37)
+  def _reduce_9(val, _values)
+     Query::Unequal.instance 
+  end
+.,.,
+
+module_eval(<<'.,.,', 'arql_grammer.rb', 40)
+  def _reduce_10(val, _values)
+     val[0] 
+  end
+.,.,
+
+module_eval(<<'.,.,', 'arql_grammer.rb', 41)
+  def _reduce_11(val, _values)
+     Query::Operator.new(val[0]) 
+  end
+.,.,
+
+module_eval(<<'.,.,', 'arql_grammer.rb', 45)
+  def _reduce_12(val, _values)
      Query::Condition.new(val[0], val[1], val[2]) 
   end
 .,.,

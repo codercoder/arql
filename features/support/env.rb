@@ -15,10 +15,8 @@ def define_schema(&block)
   end
 end
 
-if ENV['LOG_LEVEL']
-  ActiveRecord::Base.logger = Logger.new('debug.log', 1, 1024*1024)
-  ActiveRecord::Base.logger.level = ENV['LOG_LEVEL']
-end
+ActiveRecord::Base.logger = Logger.new(STDOUT)
+ActiveRecord::Base.logger.level = Logger::DEBUG
 
 Before do
   @options = {}

@@ -5,9 +5,12 @@ options no_result_var
 prechigh
   left  AND
   left  OR
+  left  EQUAL
+  left  UNEQUAL
+  left  LESS_OR_MORE_THAN
 preclow
 
-token AND OR IDENTIFIER OPERATOR
+token AND OR IDENTIFIER EQUAL UNEQUAL LESS_OR_MORE_THAN NIL
 
 rule
   # this is the starting rule
@@ -23,14 +26,24 @@ rule
 
   identifier
   : IDENTIFIER                              { val[0] }
+  | NIL                                     { val[0] }
   ;
 
   column
   : IDENTIFIER                              { returning(Query::Column.create(@model, val[0])) {|column| @joins << column} }
   ;
 
+  equal_or_unequal
+  : EQUAL                                   { Query::Equal.instance }
+  | UNEQUAL                                 { Query::Unequal.instance }
+
+  operator
+  : equal_or_unequal                        { val[0] }
+  | LESS_OR_MORE_THAN                       { Query::Operator.new(val[0]) }
+  ;
+
   condition
-  : column OPERATOR identifier              { Query::Condition.new(val[0], val[1], val[2]) }
+  : column operator identifier              { Query::Condition.new(val[0], val[1], val[2]) }
   ;
 end
 
@@ -38,7 +51,6 @@ end
 require 'strscan'
 
 ---- inner ----
-OPERATORS = %w[!= = < >]
 
 def unquote(value)
   case value
@@ -64,8 +76,12 @@ def parse_arql(model, str)
     case
     when scanner.scan(/\s+/)
       # ignore space
-    when m = scanner.scan(/#{OPERATORS.join('|')}/i)
-      tokens.push [:OPERATOR, m]
+    when m = scanner.scan(/\!\=/i)
+      tokens.push [:UNEQUAL, m]
+    when m = scanner.scan(/\=/i)
+      tokens.push [:EQUAL, m]
+    when m = scanner.scan(/>|</i)
+      tokens.push [:LESS_OR_MORE_THAN, m]
     when m = scanner.scan(/and\b/i)
       tokens.push   [:AND, m]
     when m = scanner.scan(/or\b/i)
@@ -75,7 +91,7 @@ def parse_arql(model, str)
     when m = scanner.scan(/false\b/i)
       tokens.push   [:IDENTIFIER, false]
     when m = scanner.scan(/nil\b/i)
-      tokens.push   [:IDENTIFIER, nil]
+      tokens.push   [:NIL, nil]
     when m = scanner.scan(/'(((\\')|[^'])*)'/)                  # single quoted
       tokens.push   [:IDENTIFIER, unescape_quote(unquote(m))]
     when m = scanner.scan(/"(((\\")|[^"])*)"/)                  # double quoted
