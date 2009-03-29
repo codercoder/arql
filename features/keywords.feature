@@ -43,3 +43,10 @@ Feature: ARQL supported keywords
     And kuli1 is admin
     When arql => admin != true
     Then should find user: kuli2
+
+  Scenario: Operator != on number
+    Given users: kuli1, kuli2, kuli3
+    And kuli1's age is 5
+    And kuli3's age is 1
+    When arql => age != 5
+    Then should find user: kuli2, kuli3

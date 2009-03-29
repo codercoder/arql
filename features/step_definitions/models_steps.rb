@@ -37,6 +37,7 @@ Given /users: (.*)/ do |user_names|
     create_table :users do |t|
       t.column :name, :string
       t.column :admin, :boolean
+      t.column :age, :number
     end
   end
 
@@ -127,4 +128,8 @@ end
 
 Given /(\w+) is not admin/ do |user_name|
   User.find_by_name(user_name).update_attribute(:admin, false)
+end
+
+Given /(\w+)'s age is (\d+)/ do |user_name, age|
+  User.find_by_name(user_name).update_attribute(:age, age.to_i)
 end
