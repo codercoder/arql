@@ -15,7 +15,7 @@ token AND OR IDENTIFIER EQUAL UNEQUAL LESS_OR_MORE_THAN NIL
 rule
   # this is the starting rule
   target
-  : conditions                              { Query.new(:condition => val[0], :joins => @joins.collect(&:join).flatten.compact) }
+  : conditions                              { Query::Base.new(:condition => val[0], :joins => @joins.collect(&:join).flatten.compact) }
   ;
 
   conditions
@@ -30,7 +30,7 @@ rule
   ;
 
   column
-  : IDENTIFIER                              { returning(Query::Column.create(@model, val[0])) {|column| @joins << column} }
+  : IDENTIFIER                              { returning(Query::Column.new(@model, val[0])) {|column| @joins << column} }
   ;
 
   operator

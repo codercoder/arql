@@ -176,7 +176,7 @@ Racc_debug_parser = false
 
 module_eval(<<'.,.,', 'arql_grammer.rb', 17)
   def _reduce_1(val, _values)
-     Query.new(:condition => val[0], :joins => @joins.collect(&:join).flatten.compact) 
+     Query::Base.new(:condition => val[0], :joins => @joins.collect(&:join).flatten.compact) 
   end
 .,.,
 
@@ -208,7 +208,7 @@ module_eval(<<'.,.,', 'arql_grammer.rb', 28)
 
 module_eval(<<'.,.,', 'arql_grammer.rb', 32)
   def _reduce_7(val, _values)
-     returning(Query::Column.create(@model, val[0])) {|column| @joins << column} 
+     returning(Query::Column.new(@model, val[0])) {|column| @joins << column} 
   end
 .,.,
 
