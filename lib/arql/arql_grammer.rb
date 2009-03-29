@@ -12,7 +12,7 @@ token AND OR IDENTIFIER OPERATOR
 rule
   # this is the starting rule
   target
-  : conditions                               { Query.new(:condition => val[0], :joins => @joins.collect(&:joins).flatten.compact) }
+  : conditions                               { Query.new(:condition => val[0], :joins => @joins.collect(&:join).flatten.compact) }
   ;
 
   conditions
@@ -70,6 +70,10 @@ def parse_arql(model, str)
       tokens.push   [:AND, m]
     when m = scanner.scan(/or\b/i)
       tokens.push   [:OR, m]
+    when m = scanner.scan(/true\b/i)
+      tokens.push   [:IDENTIFIER, true]
+    when m = scanner.scan(/false\b/i)
+      tokens.push   [:IDENTIFIER, false]
     when m = scanner.scan(/'(((\\')|[^'])*)'/)                  # single quoted
       tokens.push   [:IDENTIFIER, unescape_quote(unquote(m))]
     when m = scanner.scan(/"(((\\")|[^"])*)"/)                  # double quoted

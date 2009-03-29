@@ -44,6 +44,10 @@ def parse_arql(model, str)
       tokens.push   [:AND, m]
     when m = scanner.scan(/or\b/i)
       tokens.push   [:OR, m]
+    when m = scanner.scan(/true\b/i)
+      tokens.push   [:IDENTIFIER, true]
+    when m = scanner.scan(/false\b/i)
+      tokens.push   [:IDENTIFIER, false]
     when m = scanner.scan(/'(((\\')|[^'])*)'/)                  # single quoted
       tokens.push   [:IDENTIFIER, unescape_quote(unquote(m))]
     when m = scanner.scan(/"(((\\")|[^"])*)"/)                  # double quoted
@@ -154,7 +158,7 @@ Racc_debug_parser = false
 
 module_eval(<<'.,.,', 'arql_grammer.rb', 14)
   def _reduce_1(val, _values)
-     Query.new(:condition => val[0], :joins => @joins.collect(&:joins).flatten.compact) 
+     Query.new(:condition => val[0], :joins => @joins.collect(&:join).flatten.compact) 
   end
 .,.,
 

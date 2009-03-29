@@ -36,6 +36,7 @@ Given /users: (.*)/ do |user_names|
   define_schema do
     create_table :users do |t|
       t.column :name, :string
+      t.column :admin, :boolean
     end
   end
 
@@ -118,4 +119,12 @@ Given /column_name_is_froms: (.*)/ do |names|
   names.split(',').collect(&:strip).each do |name|
     ColumnNameIsFrom.create!(:from => name)
   end
+end
+
+Given /(\w+) is admin/ do |user_name|
+  User.find_by_name(user_name).update_attribute(:admin, true)
+end
+
+Given /(\w+) is not admin/ do |user_name|
+  User.find_by_name(user_name).update_attribute(:admin, false)
 end

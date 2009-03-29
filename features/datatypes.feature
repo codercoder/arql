@@ -27,3 +27,14 @@ Feature: ARQL supported data types
     | 1.0 | kuli1 |
     | .1 | , |
     | 0.1 | , |
+
+  Scenario Outline: Boolean type
+    Given users: kuli1, kuli2
+    And kuli1 is admin
+    And kuli2 is not admin
+    When arql => admin = <is_admin>
+    Then should find user: <found_user_name>
+  Examples:
+    | is_admin | found_user_name |
+    | true | kuli1 |
+    | false | kuli2 |

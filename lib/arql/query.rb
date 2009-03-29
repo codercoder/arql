@@ -4,15 +4,15 @@ module Arql
 
   module SqlHeler
     def quote(name, column=nil)
-      ActiveRecord::Base.connection.quote(name.to_s, column)
+      ActiveRecord::Base.connection.quote(name, column)
     end
 
     def quote_table_name(name)
-      ActiveRecord::Base.connection.quote_table_name(name.to_s)
+      ActiveRecord::Base.connection.quote_table_name(name)
     end
 
     def quote_column_name(name)
-      ActiveRecord::Base.connection.quote_column_name(name.to_s)
+      ActiveRecord::Base.connection.quote_column_name(name)
     end
 
     def quote_name(table_name, column_name)
@@ -22,48 +22,62 @@ module Arql
 
   class Query
     class Column
-      class ColumnFactory
-        include SqlHeler
-        def initialize(model, name)
-          @model = model
-          @name = name
-        end
+      include SqlHeler
 
-        def create_column
-          column_name, joins = if @model.column_names.include?(@name)
-            [quote_name(@model.table_name, @name)]
-          elsif reflection = @model.reflections[@name.to_sym]
-            if reflection.klass.arql_id
-              column_name = reflection.klass.arql_id
-              [quote_name(reflection.klass.table_name, column_name), reflection.name.to_sym]
-            else
-              [reflection.primary_key_name]
-            end
-          elsif reflection = reflection_of_specified_comparision_name_in_arql
-            #specified comparision name in arql: project.name = 'arql'
-            arql_id = @name.split('.').last
-            [quote_name(reflection.klass.table_name, arql_id), reflection.name.to_sym]
+      def self.create(model, arql_name)
+        Column.new(model, arql_name)
+      end
+
+      attr_reader :join
+
+      def initialize(model, arql_name)
+        @model = model
+        @arql_name = arql_name
+        init_column_model_and_name
+      end
+
+      def to_sql
+        quote_name(@column_model.table_name, @column_name)
+      end
+
+      def quote_value(value)
+        origin_column = @column_model.columns_hash[@column_name]
+        quote(value, origin_column)
+      end
+
+      private
+      def init_column_model_and_name
+        if origin_column = @model.columns_hash[@arql_name]
+          @column_name = origin_column.name
+          @column_model = @model
+        elsif ref = @model.reflections[@arql_name.to_sym]
+          if ref.klass.arql_id
+            @column_model = ref.klass
+            @column_name = @column_model.arql_id
+            @join = ref.name.to_sym
           else
-            raise column_invalid
+            @column_model = @model
+            @column_name = ref.primary_key_name
           end
-          OpenStruct.new(:to_sql => (column_name), :joins => joins)
-        end
-
-        private
-        def reflection_of_specified_comparision_name_in_arql
-          if @name =~ /.+\..+/
-            reflection_name = @name.split('.').first
-            @model.reflections[reflection_name.to_sym]
-          end
-        end
-
-        def column_invalid
-          ColumnInvalid.new "Couldn't figure out what's means #{@name.inspect} for #{@model.inspect}."
+        elsif ref = reflection_of_specified_comparision_name_in_arql
+          #specified comparision name in arql: project.name = 'arql'
+          @column_model = ref.klass
+          @column_name = @arql_name.split('.').last
+          @join = ref.name.to_sym
+        else
+          raise column_invalid
         end
       end
 
-      def self.create(model, name)
-        ColumnFactory.new(model, name).create_column
+      def column_invalid
+        ColumnInvalid.new "Couldn't figure out what's means #{@arql_name.inspect} for #{@model.inspect}."
+      end
+
+      def reflection_of_specified_comparision_name_in_arql
+        if @arql_name =~ /.+\..+/
+          reflection_name = @arql_name.split('.').first
+          @model.reflections[reflection_name.to_sym]
+        end
       end
     end
 
@@ -76,17 +90,7 @@ module Arql
       end
       
       def to_sql
-        "#{@left.to_sql} #{@opt} #{primitive_types_to_sql(@right)}"
-      end
-
-      private
-      def primitive_types_to_sql(value)
-        case value
-        when String
-          quote(value)
-        when Numeric
-          value
-        end
+        "#{@left.to_sql} #{@opt} #{@left.quote_value(@right)}"
       end
     end
     
