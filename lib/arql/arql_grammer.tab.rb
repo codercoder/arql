@@ -11,7 +11,7 @@ require 'strscan'
 module Arql
   class Parser < Racc::Parser
 
-module_eval(<<'...end arql_grammer.rb/module_eval...', 'arql_grammer.rb', 54)
+module_eval(<<'...end arql_grammer.rb/module_eval...', 'arql_grammer.rb', 51)
 
 def unquote(value)
   case value
@@ -74,32 +74,32 @@ end
 ##### State transition tables begin ###
 
 racc_action_table = [
-     9,    11,    12,    17,    18,     6,     7,     4,    13,     4,
-     4,    19,     6 ]
+     9,    10,    11,    16,    17,     6,     7,     4,    12,     4,
+     4,    18,     6 ]
 
 racc_action_check = [
-     3,     3,     3,    10,    10,     1,     1,     6,     5,     7,
-     0,    13,    15 ]
+     3,     3,     3,     8,     8,     1,     1,     6,     5,     7,
+     0,    12,    14 ]
 
 racc_action_pointer = [
-     3,     3,   nil,    -4,   nil,     8,     0,     2,   nil,   nil,
-    -4,   nil,   nil,    11,   nil,    10,   nil,   nil,   nil,   nil ]
+     3,     3,   nil,    -4,   nil,     8,     0,     2,    -4,   nil,
+   nil,   nil,    11,   nil,    10,   nil,   nil,   nil,   nil ]
 
 racc_action_default = [
-   -13,    -1,    -4,   -13,    -7,   -13,   -13,   -13,   -10,    -8,
-   -13,    -9,   -11,   -13,    -2,    -3,   -12,    -5,    -6,    20 ]
+   -12,    -1,    -4,   -12,    -7,   -12,   -12,   -12,   -12,    -8,
+    -9,   -10,   -12,    -2,    -3,   -11,    -5,    -6,    19 ]
 
 racc_goto_table = [
-     1,    16,     5,     8,    10,   nil,    14,    15 ]
+     1,    15,     5,     8,   nil,   nil,    13,    14 ]
 
 racc_goto_check = [
-     2,     4,     1,     6,     7,   nil,     2,     2 ]
+     2,     4,     1,     6,   nil,   nil,     2,     2 ]
 
 racc_goto_pointer = [
-   nil,     2,     0,   nil,    -9,   nil,     0,     1 ]
+   nil,     2,     0,   nil,    -7,   nil,     0 ]
 
 racc_goto_default = [
-   nil,   nil,   nil,     2,   nil,     3,   nil,   nil ]
+   nil,   nil,   nil,     2,   nil,     3,   nil ]
 
 racc_reduce_table = [
   0, 0, :racc_error,
@@ -112,13 +112,12 @@ racc_reduce_table = [
   1, 14, :_reduce_7,
   1, 15, :_reduce_8,
   1, 15, :_reduce_9,
-  1, 16, :_reduce_10,
-  1, 16, :_reduce_11,
-  3, 12, :_reduce_12 ]
+  1, 15, :_reduce_10,
+  3, 12, :_reduce_11 ]
 
-racc_reduce_n = 13
+racc_reduce_n = 12
 
-racc_shift_n = 20
+racc_shift_n = 19
 
 racc_token_table = {
   false => 0,
@@ -167,7 +166,6 @@ Racc_token_to_s_table = [
   "condition",
   "identifier",
   "column",
-  "equal_or_unequal",
   "operator" ]
 
 Racc_debug_parser = false
@@ -184,13 +182,13 @@ module_eval(<<'.,.,', 'arql_grammer.rb', 17)
 
 module_eval(<<'.,.,', 'arql_grammer.rb', 21)
   def _reduce_2(val, _values)
-     Query::And.new(val[0], val[2]) 
+     Query::And.instance.expression(val[0], val[2]) 
   end
 .,.,
 
 module_eval(<<'.,.,', 'arql_grammer.rb', 22)
   def _reduce_3(val, _values)
-     Query::Or.new(val[0], val[2]) 
+     Query::Or.instance.expression(val[0], val[2]) 
   end
 .,.,
 
@@ -226,21 +224,15 @@ module_eval(<<'.,.,', 'arql_grammer.rb', 37)
   end
 .,.,
 
-module_eval(<<'.,.,', 'arql_grammer.rb', 40)
+module_eval(<<'.,.,', 'arql_grammer.rb', 38)
   def _reduce_10(val, _values)
-     val[0] 
-  end
-.,.,
-
-module_eval(<<'.,.,', 'arql_grammer.rb', 41)
-  def _reduce_11(val, _values)
      Query::Operator.new(val[0]) 
   end
 .,.,
 
-module_eval(<<'.,.,', 'arql_grammer.rb', 45)
-  def _reduce_12(val, _values)
-     Query::Condition.new(val[0], val[1], val[2]) 
+module_eval(<<'.,.,', 'arql_grammer.rb', 42)
+  def _reduce_11(val, _values)
+     val[1].expression(val[0], val[2]) 
   end
 .,.,
 

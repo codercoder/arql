@@ -15,8 +15,8 @@ def define_schema(&block)
   end
 end
 
-ActiveRecord::Base.logger = Logger.new(STDOUT)
-ActiveRecord::Base.logger.level = Logger::DEBUG
+# ActiveRecord::Base.logger = Logger.new(STDOUT)
+# ActiveRecord::Base.logger.level = Logger::DEBUG
 
 Before do
   @options = {}

@@ -15,12 +15,12 @@ token AND OR IDENTIFIER EQUAL UNEQUAL LESS_OR_MORE_THAN NIL
 rule
   # this is the starting rule
   target
-  : conditions                               { Query.new(:condition => val[0], :joins => @joins.collect(&:join).flatten.compact) }
+  : conditions                              { Query.new(:condition => val[0], :joins => @joins.collect(&:join).flatten.compact) }
   ;
 
   conditions
-  : conditions AND conditions                { Query::And.new(val[0], val[2]) } 
-  | conditions OR conditions                 { Query::Or.new(val[0], val[2]) } 
+  : conditions AND conditions               { Query::And.instance.expression(val[0], val[2]) }
+  | conditions OR conditions                { Query::Or.instance.expression(val[0], val[2]) }
   | condition
   ;
 
@@ -33,17 +33,14 @@ rule
   : IDENTIFIER                              { returning(Query::Column.create(@model, val[0])) {|column| @joins << column} }
   ;
 
-  equal_or_unequal
+  operator
   : EQUAL                                   { Query::Equal.instance }
   | UNEQUAL                                 { Query::Unequal.instance }
-
-  operator
-  : equal_or_unequal                        { val[0] }
   | LESS_OR_MORE_THAN                       { Query::Operator.new(val[0]) }
   ;
 
   condition
-  : column operator identifier              { Query::Condition.new(val[0], val[1], val[2]) }
+  : column operator identifier              { val[1].expression(val[0], val[2]) }
   ;
 end
 

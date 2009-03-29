@@ -39,16 +39,17 @@ module Arql
         init_column_model_and_name
       end
 
-      def to_sql
-        quote_name(@column_model.table_name, @column_name)
+      def expression_sql(opt, right)
+        quoted_full_name = quote_name(@column_model.table_name, @column_name)
+        "#{quoted_full_name} #{opt} #{quote_value(right)}"
       end
 
+      private
       def quote_value(value)
         origin_column = @column_model.columns_hash[@column_name]
         quote(value, origin_column)
       end
 
-      private
       def init_column_model_and_name
         if origin_column = @model.columns_hash[@arql_name]
           @column_name = origin_column.name
@@ -90,16 +91,30 @@ module Arql
       end
 
       def expression(left, right)
-        Expression.new(left, self, right)
+        right.nil? ? nil_expression(left) : not_nil_expression(left, right)
       end
 
-      def to_sql(left, right)
-        raise OperatorInvalid, "Unknown what's means: #{self} nil" if right.nil?
-        "#{@opt} #{left.quote_value(right)}"
+      protected
+      def not_nil_expression(left, right)
+        Expression.new(left, @opt, right)
       end
 
-      def to_s
-        @opt
+      def nil_expression(left)
+        raise OperatorInvalid, "Unknown what's means: #{@opt} nil"
+      end
+    end
+
+    class And < Operator
+      include Singleton
+      def initialize
+        super('and')
+      end
+    end
+
+    class Or < Operator
+      include Singleton
+      def initialize
+        super('or')
       end
     end
 
@@ -110,16 +125,16 @@ module Arql
         super('=')
       end
 
-      def expression(left, right)
+      def not_nil_expression(left, right)
         if right === false
-          Or.new(super, Expression.new(left, self, nil))
+          Or.instance.expression(super, nil_expression(left))
         else
           super
         end
       end
 
-      def to_sql(left, right)
-        right.nil? ? 'IS NULL' : super
+      def nil_expression(left)
+        Expression.new(left, 'IS', nil)
       end
     end
 
@@ -130,28 +145,12 @@ module Arql
         super('!=')
       end
 
-      def expression(left, right)
-        if right.nil?
-          super
-        else
-          Or.new(super, Expression.new(left, Equal.instance, nil))
-        end
+      def not_nil_expression(left, right)
+        Or.instance.expression(super, Equal.instance.nil_expression(left))
       end
 
-      def to_sql(left, right)
-        right.nil? ? 'IS NOT NULL' : super
-      end
-    end
-
-    class Condition
-      def initialize(left, opt, right)
-        @left = left
-        @opt = opt
-        @right = right
-      end
-
-      def to_sql
-        @opt.expression(@left, @right).to_sql
+      def nil_expression(left)
+        Expression.new(left, 'IS NOT', nil)
       end
     end
 
@@ -162,34 +161,12 @@ module Arql
         @right = right
       end
 
-      def to_s
-        "#{@left.arql_name} #{@opt} #{@right}"
+      def to_sql(*args)
+        @left.expression_sql(@opt, @right)
       end
 
-      def to_sql
-        "#{@left.to_sql} #{@opt.to_sql(@left, @right)}"
-      end
-    end
-
-    class Or
-      def initialize(left, right)
-        @left = left
-        @right = right
-      end
-      
-      def to_sql
-        @left.to_sql + " or " +  @right.to_sql
-      end
-    end
-
-    class And
-      def initialize(left, right)
-        @left = left
-        @right = right
-      end
-      
-      def to_sql
-        @left.to_sql + " and " + @right.to_sql
+      def expression_sql(opt, right)
+        "#{self.to_sql} #{opt} #{right.to_sql}"
       end
     end
 
