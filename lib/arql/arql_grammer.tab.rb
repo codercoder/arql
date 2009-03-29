@@ -12,7 +12,7 @@ module Arql
   class Parser < Racc::Parser
 
 module_eval(<<'...end arql_grammer.rb/module_eval...', 'arql_grammer.rb', 41)
-OPERATORS = %w[= < >]
+OPERATORS = %w[!= = < >]
 
 def unquote(value)
   case value
@@ -48,6 +48,8 @@ def parse_arql(model, str)
       tokens.push   [:IDENTIFIER, true]
     when m = scanner.scan(/false\b/i)
       tokens.push   [:IDENTIFIER, false]
+    when m = scanner.scan(/nil\b/i)
+      tokens.push   [:IDENTIFIER, nil]
     when m = scanner.scan(/'(((\\')|[^'])*)'/)                  # single quoted
       tokens.push   [:IDENTIFIER, unescape_quote(unquote(m))]
     when m = scanner.scan(/"(((\\")|[^"])*)"/)                  # double quoted

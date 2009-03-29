@@ -2,6 +2,9 @@ module Arql
   class ColumnInvalid < StandardError
   end
 
+  class OperatorInvalid < StandardError
+  end
+
   module SqlHeler
     def quote(name, column=nil)
       ActiveRecord::Base.connection.quote(name, column)
@@ -28,7 +31,7 @@ module Arql
         Column.new(model, arql_name)
       end
 
-      attr_reader :join
+      attr_reader :join, :arql_name
 
       def initialize(model, arql_name)
         @model = model
@@ -88,12 +91,22 @@ module Arql
         @opt = opt
         @right = right
       end
-      
+
+      def to_s
+        "#{@left.arql_name} #{@opt} #{@right}"
+      end
+
       def to_sql
-        "#{@left.to_sql} #{@opt} #{@left.quote_value(@right)}"
+        if @right.nil?
+          opt = {'=' => 'IS', '!=' => 'IS NOT'}[@opt]
+          raise OperatorInvalid, "Unknown what's means: #{self}" if opt.nil?
+          "#{@left.to_sql} #{opt} NULL"
+        else
+          "#{@left.to_sql} #{@opt} #{@left.quote_value(@right)}"
+        end
       end
     end
-    
+
     class Or
       def initialize(left, right)
         @left = left

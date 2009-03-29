@@ -36,3 +36,10 @@ Feature: ARQL usability support
     And foo foo1 belongs to from1
     When find foo by arql: column_name_is_from = from1
     Then should find foo: foo1
+
+  Scenario: should handle nil as false for boolean column
+    Given users: kuli1, kuli2
+    And kuli1 is admin
+    When arql => admin = false
+    Then should find user: kuli2
+

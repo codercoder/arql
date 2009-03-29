@@ -19,3 +19,27 @@ Feature: ARQL supported keywords
     Given users: kuli1, kuli2
     When arql => id > 1
     Then should find user: kuli2
+
+  Scenario: nil keyword
+    Given users: kuli1, kuli2
+    And kuli1 is admin
+    When arql => admin = nil
+    Then should find user: kuli2
+
+  Scenario: != nil keyword
+    Given users: kuli1, kuli2
+    And kuli1 is admin
+    When arql => admin != nil
+    Then should find user: kuli1
+
+  Scenario: Only support = and != with nil
+    Given users: kuli1, kuli2
+    And kuli1 is admin
+    When arql => admin > nil
+    Then should raise Arql::OperatorInvalid
+
+  Scenario: Operator !=
+    Given users: kuli1, kuli2
+    And kuli1 is admin
+    When arql => admin != true
+    Then should find user: kuli2
