@@ -7,10 +7,10 @@ prechigh
   left  OR
   left  EQUAL
   left  UNEQUAL
-  left  LESS_OR_MORE_THAN
+  left  COMPARE_OP
 preclow
 
-token AND OR IDENTIFIER EQUAL UNEQUAL LESS_OR_MORE_THAN NIL
+token AND OR IDENTIFIER EQUAL UNEQUAL COMPARE_OP NIL
 
 rule
   # this is the starting rule
@@ -36,7 +36,7 @@ rule
   operator
   : EQUAL                                   { Query::Equal.instance }
   | UNEQUAL                                 { Query::Unequal.instance }
-  | LESS_OR_MORE_THAN                       { Query::Operator.new(val[0]) }
+  | COMPARE_OP                              { Query::Operator.new(val[0]) }
   ;
 
   condition
@@ -73,12 +73,12 @@ def parse_arql(model, str)
     case
     when scanner.scan(/\s+/)
       # ignore space
+    when m = scanner.scan(/<\=|>\=|>|</)
+      tokens.push [:COMPARE_OP, m]
     when m = scanner.scan(/\!\=/i)
       tokens.push [:UNEQUAL, m]
     when m = scanner.scan(/\=/i)
       tokens.push [:EQUAL, m]
-    when m = scanner.scan(/>|</i)
-      tokens.push [:LESS_OR_MORE_THAN, m]
     when m = scanner.scan(/and\b/i)
       tokens.push   [:AND, m]
     when m = scanner.scan(/or\b/i)
