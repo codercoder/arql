@@ -102,3 +102,18 @@ Feature: ARQL supported keywords
     | order by name | kuli1, kuli2, kuli3, kuli4 |
     | order by age, name | kuli2, kuli1, kuli4, kuli3 |
     | age=3 order by name | kuli1, kuli4 |
+
+  Scenario Outline: Order by association
+    Given models: project, company
+    And projects: arql-1, arql-2, dtr
+    And companies: coder-2, coder-1, coder-0
+    And project arql-1 belongs to coder-2
+    And project arql-2 belongs to coder-1
+    And project dtr belongs to coder-0
+    When find project by arql: <arql>
+    Then should find project: <result>
+  Examples:
+    | arql | result |
+    | order by company | dtr, arql-2, arql-1 |
+    | order by company.name | dtr, arql-2, arql-1 |
+    | order by company.id | arql-1, arql-2, dtr |
