@@ -121,7 +121,7 @@ def parse_arql(model, str)
       tokens.push   [:IDENTIFIER, m.to_f]
     when m = scanner.scan(/\d+\.?/)                             # integers
       tokens.push   [:IDENTIFIER, m.to_i]
-    when m = scanner.scan(/[^ ]+/)
+    when m = scanner.scan(/([^\b\s,\!\=<>]+)/)
       tokens.push   [:IDENTIFIER, m]
     else
       raise "unexpected characters #{scanner.peek(5)}"

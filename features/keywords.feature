@@ -38,11 +38,16 @@ Feature: ARQL supported keywords
     When arql => admin > nil
     Then should raise Arql::OperatorInvalid
 
-  Scenario: Operator !=
+  Scenario Outline: Operator !=
     Given users: kuli1, kuli2
     And kuli1 is admin
-    When arql => admin != true
-    Then should find user: kuli2
+    When arql => <arql>
+    Then should find user: <result>
+  Examples:
+    | arql | result |
+    | admin != true | kuli2 |
+    | admin!=true | kuli2 |
+    | name!=kuli2 | kuli1 |
 
   Scenario: Operator != on number
     Given users: kuli1, kuli2, kuli3
@@ -84,7 +89,16 @@ Feature: ARQL supported keywords
     | age <= 1 | kuli3 |
     | age <= 0 |  |
 
-  Scenario: Order by
-    Given users: kuli2, kuli3, kuli1
-    When arql => order by name
-    Then should find user: kuli1, kuli2, kuli3
+  Scenario Outline: Order by
+    Given users: kuli2, kuli3, kuli4, kuli1
+    And kuli1's age is 3
+    And kuli2's age is 1
+    And kuli3's age is 5
+    And kuli4's age is 3
+    When arql => <arql>
+    Then should find user: <result>
+  Examples:
+    | arql | result |
+    | order by name | kuli1, kuli2, kuli3, kuli4 |
+    | order by age, name | kuli2, kuli1, kuli4, kuli3 |
+    | age=3 order by name | kuli1, kuli4 |

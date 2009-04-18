@@ -11,9 +11,9 @@ Feature: ARQL usability support
     | non_exist_association.non_exist_column_name |
 
   Scenario: always quote binding value
-    Given users: who'sthis"user`?!@$%^&*-+
-    When arql => name = who'sthis"user`?!@$%^&*-+
-    Then should find user: who'sthis"user`?!@$%^&*-+
+    Given users: who'sthis"user`?@$%^&*-+
+    When arql => name = who'sthis"user`?@$%^&*-+
+    Then should find user: who'sthis"user`?@$%^&*-+
 
   Scenario: always quote table name
     Given models: table_name_is_select, foo
