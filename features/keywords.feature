@@ -83,4 +83,8 @@ Feature: ARQL supported keywords
     | age <= 2 | kuli3 |
     | age <= 1 | kuli3 |
     | age <= 0 |  |
-  
+
+  Scenario: Order by
+    Given users: kuli2, kuli3, kuli1
+    When arql => order by name
+    Then should find user: kuli1, kuli2, kuli3

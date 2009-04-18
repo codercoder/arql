@@ -3,6 +3,7 @@ class Arql::Parser
 options no_result_var
 
 prechigh
+  right ORDER_BY
   left  AND
   left  OR
   left  EQUAL
@@ -10,12 +11,31 @@ prechigh
   left  COMPARE_OP
 preclow
 
-token AND OR IDENTIFIER EQUAL UNEQUAL COMPARE_OP NIL
+token AND OR IDENTIFIER EQUAL UNEQUAL COMPARE_OP NIL ORDER_BY COMMA
 
 rule
   # this is the starting rule
   target
-  : conditions                              { Query::Base.new(:condition => val[0], :joins => @joins.collect(&:join).flatten.compact) }
+  : opt_conditions opt_order_by             { Query::Base.new(:condition => val[0], :joins => @joins, :order_by => val[1]) }
+  ;
+
+  opt_conditions
+  : /* optional */
+  | conditions
+  ;
+
+  opt_order_by
+  : /* optional */
+  | order_by
+  ;
+
+  order_by
+  : ORDER_BY columns                        { val[1] }
+  ;
+
+  columns
+  : column                                  { [val[0]] }
+  | column COMMA columns                    { [val[0]] + val[2] }
   ;
 
   conditions
@@ -75,10 +95,12 @@ def parse_arql(model, str)
       # ignore space
     when m = scanner.scan(/<\=|>\=|>|</)
       tokens.push [:COMPARE_OP, m]
-    when m = scanner.scan(/\!\=/i)
+    when m = scanner.scan(/\!\=/)
       tokens.push [:UNEQUAL, m]
-    when m = scanner.scan(/\=/i)
+    when m = scanner.scan(/\=/)
       tokens.push [:EQUAL, m]
+    when m = scanner.scan(/,/)
+      tokens.push [:COMMA, m]
     when m = scanner.scan(/and\b/i)
       tokens.push   [:AND, m]
     when m = scanner.scan(/or\b/i)
@@ -89,6 +111,8 @@ def parse_arql(model, str)
       tokens.push   [:IDENTIFIER, false]
     when m = scanner.scan(/nil\b/i)
       tokens.push   [:NIL, nil]
+    when m = scanner.scan(/order\s+by\b/i)
+      tokens.push   [:ORDER_BY, m]
     when m = scanner.scan(/'(((\\')|[^'])*)'/)                  # single quoted
       tokens.push   [:IDENTIFIER, unescape_quote(unquote(m))]
     when m = scanner.scan(/"(((\\")|[^"])*)"/)                  # double quoted

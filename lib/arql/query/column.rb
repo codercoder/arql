@@ -18,8 +18,11 @@ module Arql
       end
 
       def expression_sql(opt, right)
-        quoted_full_name = quote_name(@column_model.table_name, @column_name)
         "#{quoted_full_name} #{opt} #{quote_value(right)}"
+      end
+
+      def quoted_full_name
+        quote_name(@column_model.table_name, @column_name)
       end
 
       private
